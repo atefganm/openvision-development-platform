@@ -1,0 +1,8 @@
+require octagon-partitions.inc
+
+SRCDATE = "20201218"
+
+COMPATIBLE_MACHINE = "^(sf8008)$"
+
+SRC_URI[md5sum] = "f4434605518fb2b734921dff6dba4923"
+SRC_URI[sha256sum] = "19717f6b570ee4f75e50bd580a30ccb7638e230804997257983ddf2d186bd2ba"

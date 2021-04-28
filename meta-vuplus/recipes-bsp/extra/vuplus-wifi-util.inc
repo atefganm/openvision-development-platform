@@ -1,0 +1,36 @@
+SECTION = "base"
+LICENSE = "CLOSED"
+#require conf/license/license-close.inc
+
+PROVIDES += "vuplus-wifi-util"
+RPROVIDES_${PN} += "vuplus-wifi-util"
+
+PR="${SRCDATE}.${SRCDATE_PR}"
+
+SRC_URI = " \
+    http://archive.vuplus.com/download/build_support/vuplus/vuplus-wifi-util-${MACHINE}-${PV}-${PR}.tar.gz \
+"
+
+S="${WORKDIR}/vuplus-wifi-util-${MACHINE}"
+
+do_package_qa() {
+}
+
+PACKAGE_ARCH = "${MACHINE_ARCH}"
+FILES_${PN}="/"
+
+do_install() {
+	install -d ${D}${bindir}
+	install -m 0755 ${S}/bcmdl ${D}${bindir}
+	install -m 0755 ${S}/wl ${D}${bindir}
+	install -m 0755 ${S}/wl-config.sh ${D}${bindir}
+	install -m 0755 ${S}/wl-down.sh ${D}${bindir}
+
+	install -d ${D}${prefix}/local/modules
+	install -m 0644 ${S}/dhd.ko ${D}${prefix}/local/modules/dhd.ko
+
+	install -d ${D}${nonarch_base_libdir}/firmware/bcm43569/
+	install -m 0644 ${S}/bcm43569-firmware.bin ${D}${nonarch_base_libdir}/firmware/bcm43569/
+	install -m 0644 ${S}/bcm43569_iton.nvm ${D}${nonarch_base_libdir}/firmware/bcm43569/
+}
+

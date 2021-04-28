@@ -1,0 +1,39 @@
+diff --git a/lib/libmtd.c b/lib/libmtd.c
+index 7622532..edcab05 100644
+--- a/lib/libmtd.c
++++ b/lib/libmtd.c
+@@ -28,7 +28,7 @@
+ #include <unistd.h>
+ #include <fcntl.h>
+ #include <dirent.h>
+-#include <sys/types.h>
++#include <sys/sysmacros.h>
+ #include <sys/stat.h>
+ #include <sys/ioctl.h>
+ #include <inttypes.h>
+diff --git a/lib/libmtd_legacy.c b/lib/libmtd_legacy.c
+index 3121da9..5eae057 100644
+--- a/lib/libmtd_legacy.c
++++ b/lib/libmtd_legacy.c
+@@ -28,7 +28,7 @@
+ #include <unistd.h>
+ #include <stdlib.h>
+ #include <errno.h>
+-#include <sys/types.h>
++#include <sys/sysmacros.h>
+ #include <sys/stat.h>
+ #include <sys/ioctl.h>
+ #include <mtd/mtd-user.h>
+diff --git a/libubi.c b/libubi.c
+index 1e08b7d..cd5405a 100644
+--- a/libubi.c
++++ b/libubi.c
+@@ -31,7 +31,7 @@
+ #include <limits.h>
+ #include <sys/ioctl.h>
+ #include <sys/stat.h>
+-#include <sys/types.h>
++#include <sys/sysmacros.h>
+ #include <libubi.h>
+ #include "libubi_int.h"
+ #include "common.h"

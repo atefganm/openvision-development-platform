@@ -1,0 +1,12 @@
+diff -Naur linux-sh4-2.6.32.71-stmicro-4g/kernel/timeconst.pl linux-sh4-2.6.32.71-stmicro-4g-PersianPrince/kernel/timeconst.pl
+--- linux-sh4-2.6.32.71-stmicro-4g/kernel/timeconst.pl	2020-08-30 13:30:04.000000000 +0430
++++ linux-sh4-2.6.32.71-stmicro-4g-PersianPrince/kernel/timeconst.pl	2020-08-30 19:25:19.857779448 +0430
+@@ -370,7 +370,7 @@
+ 	}
+ 
+ 	@val = @{$canned_values{$hz}};
+-	if (!defined(@val)) {
++	if (!@val) {
+ 		@val = compute_values($hz);
+ 	}
+ 	output($hz, @val);

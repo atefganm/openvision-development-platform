@@ -1,0 +1,29 @@
+language: c++
+compiler: gcc
+# Select Trusty Beta environment, required for testing.
+sudo: required
+dist: focal
+env:
+  - OE_CORE=master BITBAKE=master
+addons:
+  apt:
+    packages:
+    - s3cmd
+    - diffstat
+    - texinfo
+    - chrpath
+    # Not installed by default on Trusty environment.
+    - xvfb
+    # Not needed, sdl removed from qemu below.
+    # - libsdl1.2-dev
+git:
+  depth: 1
+script:
+  # Remove .rvm to free up space. This can only be done when we do not
+  # depend anymore on TravisCI add-ons like "deploy" or "artifacts",
+  # which are implemented in Ruby.
+  - rm -rf $HOME/.rvm
+  # Set up.
+  - ./travis.sh
+  # Summarize results and set final job result.
+  - echo "TravisCI result $TRAVIS_TEST_RESULT, bitbake result ${BITBAKE_RESULT:-0}"; if [ $TRAVIS_TEST_RESULT -eq 0 ] && [ "$BITBAKE_RESULT" ]; then TRAVIS_TEST_RESULT=1; false; fi

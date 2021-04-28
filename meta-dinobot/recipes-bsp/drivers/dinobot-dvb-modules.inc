@@ -1,0 +1,54 @@
+SUMMARY = "Hardware drivers for ${MACHINE}"
+SECTION = "base"
+PRIORITY = "required"
+LICENSE = "CLOSED"
+require conf/license/license-close.inc
+
+PACKAGE_ARCH = "${MACHINE_ARCH}"
+
+PV = "${KV}+${SRCDATE}"
+
+SRC_URI = "http://source.mynonpublic.com/dinobot/${MACHINETYPE}-drivers-${KV}-${SRCDATE}.zip"
+
+S = "${WORKDIR}"
+
+INITSCRIPT_NAME = "zload-dinobot"
+INITSCRIPT_PARAMS = "start 05 S ."
+
+inherit update-rc.d
+
+INHIBIT_PACKAGE_STRIP = "1"
+
+FILES_${PN} += "${nonarch_base_libdir}/modules/${KV}/extra ${bindir}/komession ${sysconfdir}/init.d ${sysconfdir}/modules-load.d"
+
+do_compile() {
+}
+
+do_package_qa() {
+}
+
+do_install_prepend() {
+	rm -f ${S}/tntfs.ko
+}
+
+do_install() {
+	install -d ${D}${nonarch_base_libdir}/modules/${KV}/extra
+	install -d ${D}${bindir}
+	install -m 0644 ${S}/dvbmodule ${D}${nonarch_base_libdir}/modules/${KV}/extra
+	install -m 0755 ${S}/komession ${D}${bindir}
+	install -d ${D}${sysconfdir}/modules-load.d
+	for i in ${KOFILES}; do
+		install -m 0644 ${S}/$i.ko ${D}${nonarch_base_libdir}/modules/${KV}/extra
+		echo $i >> ${D}${sysconfdir}/modules-load.d/_${MACHINE}.conf
+	done
+	install -d ${D}${sysconfdir}/init.d/
+	echo "#!/bin/sh" > ${S}/zload-dinobot
+	echo "komession" >> ${S}/zload-dinobot
+	echo "echo 2097152 > /proc/sys/net/core/rmem_max" >> ${S}/zload-dinobot
+	echo "echo 6 > /proc/sys/vm/dirty_ratio" >> ${S}/zload-dinobot
+	echo "echo 1 > /proc/sys/vm/overcommit_memory" >> ${S}/zload-dinobot
+	echo "echo 8192 > /proc/sys/vm/min_free_kbytes" >> ${S}/zload-dinobot
+	echo "echo interactive > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor" >> ${S}/zload-dinobot
+	echo "echo 200000 > /sys/devices/system/cpu/cpufreq/interactive/timer_rate" >> ${S}/zload-dinobot
+	install -m 0755 ${S}/zload-dinobot ${D}${sysconfdir}/init.d
+}

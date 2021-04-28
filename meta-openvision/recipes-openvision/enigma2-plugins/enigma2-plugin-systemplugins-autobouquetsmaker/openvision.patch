@@ -1,0 +1,23 @@
+diff -Naur AutoBouquetsMaker-OEA/AutoBouquetsMaker/src/setup.py AutoBouquetsMaker-PersianPrince/AutoBouquetsMaker/src/setup.py
+--- AutoBouquetsMaker-OEA/AutoBouquetsMaker/src/setup.py	2019-02-03 01:09:14.000000000 +0330
++++ AutoBouquetsMaker-PersianPrince/AutoBouquetsMaker/src/setup.py	2019-02-03 14:01:13.605665776 +0330
+@@ -33,19 +33,6 @@
+ 
+ 	ABM_BOUQUET_PREFIX = "userbouquet.abm."
+ 
+-	try: # Work-around to get OpenSPA working
+-		from boxbranding import getImageDistro
+-		if getImageDistro() == 'openspa':
+-			def keyLeft(self):
+-				ConfigListScreen.keyLeft(self)
+-				self.changedEntry()
+-
+-			def keyRight(self):
+-				ConfigListScreen.keyRight(self)
+-				self.changedEntry()
+-	except:
+-		pass
+-
+ 	def __init__(self, session):
+ 		Screen.__init__(self, session)
+ 		self.session = session

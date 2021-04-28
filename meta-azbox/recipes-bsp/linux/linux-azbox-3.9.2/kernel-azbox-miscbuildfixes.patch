@@ -1,0 +1,96 @@
+Index: b/arch/mips/boot/Makefile
+===================================================================
+--- a/arch/mips/boot/Makefile
++++ b/arch/mips/boot/Makefile
+@@ -55,7 +55,7 @@ $(obj)/vmlinux_gz.zbf: $(obj)/vmlinux.gz
+ 	cp -f $< $@
+ 
+ $(obj)/vmlinux_xload.zbf: $(obj)/vmlinux_gz.zbf
+-	$(srctree)/arch/mips/boot/genzbf -l $(loadaddr) -s 0x90020000 -a lzf -o $@ $<
++	$(obj)/genzbf -l $(loadaddr) -s 0x90020000 -a lzf -o $@ $<
+ 
+ zbimage-linux-xload: $(obj)/zbimage-linux-xload
+ endif
+@@ -66,7 +66,7 @@ $(obj)/vmlinux_gz.zbf: $(obj)/vmlinux.gz
+ 	cp -f $< $@
+ 
+ $(obj)/vmlinux_xload.zbf: $(obj)/vmlinux_gz.zbf
+-	$(srctree)/arch/mips/boot/genzbf -l $(loadaddr) -s 0x`$(NM) $(VMLINUX) | grep kernel_entry | awk '{ print $$1 }'` -a lzf -o $@ $<
++	$(obj)/genzbf -l $(loadaddr) -s 0x`$(NM) $(VMLINUX) | grep kernel_entry | awk '{ print $$1 }'` -a lzf -o $@ $<
+ 
+ zbimage-linux-xload: $(obj)/zbimage-linux-xload
+ 
+@@ -74,7 +74,7 @@ endif
+ 
+ ifdef CONFIG_TANGO4
+ $(obj)/vmlinux.gz.xload3: $(obj)/vmlinux.gz
+-	bash $(srctree)/arch/mips/boot/create_xload3.bash -p $(obj)/vmlinux.gz -c $(certid)
++	bash $(obj)/create_xload3.bash -p $(obj)/vmlinux.gz -c $(certid)
+ 
+ $(obj)/vmlinux_xload.zbf: $(obj)/vmlinux.gz.xload3
+ 	genzbf -l $(loadaddr) -s 0x`$(NM) $(VMLINUX) | grep kernel_entry | awk '{ print $$1 }'` -a lzef -o $@ $<
+@@ -87,7 +87,7 @@ $(obj)/zbimage-linux-xload: $(obj)/vmlin
+ 	mkdir romfs
+ 	cp -f $< romfs
+ 	genromfs -V MIPS_LINUX_XRPC -d romfs -f $@
+-	cp  $(srctree)/arch/mips/boot/zbimage-linux-xload $(srctree)/
++	cp  $(obj)/zbimage-linux-xload $(srctree)/
+ 	rm -rf romfs
+ endif
+ ifdef CONFIG_TANGO3
+@@ -95,7 +95,7 @@ $(obj)/zbimage-linux-xload: $(obj)/vmlin
+ 	mkdir romfs
+ 	cp -f $< romfs
+ 	genromfs -V MIPSLINUX_XLOAD -d romfs -f $@
+-	cp  $(srctree)/arch/mips/boot/zbimage-linux-xload $(srctree)/
++	cp  $(obj)/zbimage-linux-xload $(srctree)/
+ 	rm -rf romfs
+ endif
+ ifdef CONFIG_TANGO4
+@@ -103,7 +103,7 @@ $(obj)/zbimage-linux-xload: $(obj)/vmlin
+ 	mkdir romfs
+ 	cp -f $< romfs
+ 	genromfs -V MIPSLINUX_XLOAD -d romfs -f $@
+-	cp  $(srctree)/arch/mips/boot/zbimage-linux-xload $(srctree)/
++	cp  $(obj)/zbimage-linux-xload $(srctree)/
+ 	rm -rf romfs
+ endif
+ 
+Index: b/scripts/Makefile.host
+===================================================================
+--- a/scripts/Makefile.host
++++ b/scripts/Makefile.host
+@@ -111,16 +111,16 @@ hostcxx_flags  = -Wp,-MD,$(depfile) $(__
+ 
+ # Create executable from a single .c file
+ # host-csingle -> Executable
+-quiet_cmd_host-csingle 	= HOSTCC  -static $@
+-      cmd_host-csingle	= $(HOSTCC) -static $(hostc_flags) -o $@ $< \
++quiet_cmd_host-csingle 	= HOSTCC  $@
++      cmd_host-csingle	= $(HOSTCC) $(hostc_flags) -o $@ $< \
+ 	  	$(HOST_LOADLIBES) $(HOSTLOADLIBES_$(@F))
+ $(host-csingle): $(obj)/%: $(src)/%.c FORCE
+ 	$(call if_changed_dep,host-csingle)
+ 
+ # Link an executable based on list of .o files, all plain c
+ # host-cmulti -> executable
+-quiet_cmd_host-cmulti	= HOSTLD  -static $@
+-      cmd_host-cmulti	= $(HOSTCC) -static $(HOSTLDFLAGS) -o $@ \
++quiet_cmd_host-cmulti	= HOSTLD  $@
++      cmd_host-cmulti	= $(HOSTCC) $(HOSTLDFLAGS) -o $@ \
+ 			  $(addprefix $(obj)/,$($(@F)-objs)) \
+ 			  $(HOST_LOADLIBES) $(HOSTLOADLIBES_$(@F))
+ $(host-cmulti): $(obj)/%: $(host-cobjs) $(host-cshlib) FORCE
+Index: b/usr/Makefile
+===================================================================
+--- a/usr/Makefile
++++ b/usr/Makefile
+@@ -71,7 +71,7 @@ endif
+  
+ is_ramfs_input_dir := $(shell if [ -d $(ramfs-input) ]; then echo yes; fi)
+ ifeq '$(is_ramfs_input_dir)' 'yes'
+-	initramfs_extra_list := usr/initramfs_default_node_list
++	initramfs_extra_list := $(srctree)/usr/initramfs_default_node_list
+ endif
+ 
+ quiet_cmd_initfs = GEN     $@

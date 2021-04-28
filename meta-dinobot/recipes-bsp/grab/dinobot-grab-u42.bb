@@ -1,0 +1,8 @@
+require dinobot-grab.inc
+
+COMPATIBLE_MACHINE = "^(anadolprohd5)$"
+
+SRCDATE = "20200828"
+
+SRC_URI[md5sum] = "087125811b27ab70b057a4b3a4df6fde"
+SRC_URI[sha256sum] = "53952113a4b109d3020b288232af242b3e9d85511db137497cf8730ca9e77f95"

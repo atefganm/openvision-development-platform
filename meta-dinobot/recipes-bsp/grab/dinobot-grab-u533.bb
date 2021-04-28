@@ -1,0 +1,8 @@
+require dinobot-grab.inc
+
+COMPATIBLE_MACHINE = "^(arivatwin)$"
+
+SRCDATE = "20191212"
+
+SRC_URI[md5sum] = "b16f550b191173750811e8962c559231"
+SRC_URI[sha256sum] = "e47bc7a426096913b0f6232db0cd4d9789823a914aec30f5f760ae12a2820239"

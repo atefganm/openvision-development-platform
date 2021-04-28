@@ -1,0 +1,17 @@
+diff -Naur linux-sh4-2.6.32.71-stmicro-4g/arch/sh/mm/kmap.c stmicro-4g-PersianPrince/linux-sh4-2.6.32.71-stmicro-4g-PersianPrince/arch/sh/mm/kmap.c
+--- linux-sh4-2.6.32.71-stmicro-4g/arch/sh/mm/kmap.c	2020-12-23 03:44:17.000000000 +0330
++++ linux-sh4-2.6.32.71-stmicro-4g-PersianPrince/arch/sh/mm/kmap.c	2020-12-23 13:27:25.631789234 +0330
+@@ -36,6 +36,7 @@
+ 
+ 	BUG_ON(test_bit(PG_dcache_dirty, &page->flags));
+ 
++	preempt_disable();
+ 	pagefault_disable();
+ 
+ 	idx = FIX_CMAP_END -
+@@ -62,4 +63,5 @@
+ 	}
+ 
+ 	pagefault_enable();
++	preempt_enable();
+ }

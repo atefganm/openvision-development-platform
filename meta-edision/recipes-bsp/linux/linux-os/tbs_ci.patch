@@ -1,0 +1,21 @@
+diff --git a/drivers/media/usb/dvb-usb/tbs-usb.c b/drivers/media/usb/dvb-usb/tbs-usb.c
+index f142be3..3a9fef3 100644
+--- a/drivers/media/usb/dvb-usb/tbs-usb.c
++++ b/drivers/media/usb/dvb-usb/tbs-usb.c
+@@ -727,14 +727,14 @@ static int tbsusbci_init(struct dvb_usb_adapter *a)
+ 	if (ret)
+ 		goto err;
+ 
+-	ret = tbsusb_poll_slot_status(&state->ca, 0, 0);
++	/* ret = tbsusb_poll_slot_status(&state->ca, 0, 0);
+ 	if (!ret)
+ 		ret = tbsusb_set_video_port(&state->ca, 0, 0);
+ 	if (ret < 0) {
+ 		dvb_ca_en50221_release(&state->ca);
+ 		goto err;
+ 	}
+-	if (ret)
++	if (ret) */
+ 		deb_info("CI initialized.");
+ 	return 0;
+ 

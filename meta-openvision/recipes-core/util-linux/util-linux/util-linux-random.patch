@@ -1,0 +1,21 @@
+From 159e350a594c1ecc2d360d481897117d2601ba89 Mon Sep 17 00:00:00 2001
+From: Persian Prince <persianpros@yahoo.com>
+Date: Fri, 3 Jan 2020 18:40:59 +0330
+
+---
+ lib/randutils.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/randutils.c b/lib/randutils.c
+index de42795..6a62957 100644
+--- a/lib/randutils.c
++++ b/lib/randutils.c
+@@ -26,7 +26,7 @@
+ #endif
+ 
+ #ifdef HAVE_GETRANDOM
+-# include <sys/random.h>
++# include <linux/random.h>
+ #elif defined (__linux__)
+ # if !defined(SYS_getrandom) && defined(__NR_getrandom)
+    /* usable kernel-headers, but old glibc-headers */

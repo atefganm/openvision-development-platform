@@ -1,0 +1,119 @@
+[submodule "bitbake"]
+	path = bitbake
+	url = https://github.com/openembedded/bitbake.git
+	branch = master
+[submodule "meta-openembedded"]
+	path = meta-openembedded
+	url = https://github.com/openembedded/meta-openembedded.git
+	branch = master
+[submodule "openembedded-core"]
+	path = openembedded-core
+	url = https://github.com/openembedded/openembedded-core.git
+	branch = master
+[submodule "meta-python2"]
+	path = meta-python2
+	url = https://git.openembedded.org/meta-python2
+	branch = master
+[submodule "meta-qt5"]
+	path = meta-qt5
+	url = https://github.com/meta-qt5/meta-qt5.git
+	branch = master
+[submodule "meta-amiko"]
+	path = meta-amiko
+	url = https://github.com/OpenVisionE2/meta-amiko.git
+[submodule "meta-ax"]
+	path = meta-ax
+	url = https://github.com/OpenVisionE2/meta-ax.git
+[submodule "meta-azbox"]
+	path = meta-azbox
+	url = https://github.com/OpenVisionE2/meta-azbox.git
+[submodule "meta-beyonwiz"]
+	path = meta-beyonwiz
+	url = https://github.com/OpenVisionE2/meta-beyonwiz.git
+[submodule "meta-blackbox"]
+	path = meta-blackbox
+	url = https://github.com/OpenVisionE2/meta-blackbox.git
+[submodule "meta-broadmedia"]
+	path = meta-broadmedia
+	url = https://github.com/OpenVisionE2/meta-broadmedia.git
+[submodule "meta-ceryon"]
+	path = meta-ceryon
+	url = https://github.com/OpenVisionE2/meta-ceryon.git
+[submodule "meta-dags"]
+	path = meta-dags
+	url = https://github.com/OpenVisionE2/meta-dags.git
+[submodule "meta-dinobot"]
+	path = meta-dinobot
+	url = https://github.com/OpenVisionE2/meta-dinobot.git
+[submodule "meta-dreambox"]
+	path = meta-dreambox
+	url = https://github.com/OpenVisionE2/meta-dreambox.git
+[submodule "meta-ebox"]
+	path = meta-ebox
+	url = https://github.com/OpenVisionE2/meta-ebox.git
+[submodule "meta-edision"]
+	path = meta-edision
+	url = https://github.com/OpenVisionE2/meta-edision.git
+[submodule "meta-entwopia"]
+	path = meta-entwopia
+	url = https://github.com/OpenVisionE2/meta-entwopia.git
+[submodule "meta-formuler"]
+	path = meta-formuler
+	url = https://github.com/OpenVisionE2/meta-formuler.git
+[submodule "meta-gfutures"]
+	path = meta-gfutures
+	url = https://github.com/OpenVisionE2/meta-gfutures.git
+[submodule "meta-gigablue"]
+	path = meta-gigablue
+	url = https://github.com/OpenVisionE2/meta-gigablue.git
+[submodule "meta-ini"]
+	path = meta-ini
+	url = https://github.com/OpenVisionE2/meta-ini.git
+[submodule "meta-ixuss"]
+	path = meta-ixuss
+	url = https://github.com/OpenVisionE2/meta-ixuss.git
+[submodule "meta-maxytec"]
+	path = meta-maxytec
+	url = https://github.com/OpenVisionE2/meta-maxytec.git
+[submodule "meta-octagon"]
+	path = meta-octagon
+	url = https://github.com/OpenVisionE2/meta-octagon.git
+[submodule "meta-odin"]
+	path = meta-odin
+	url = https://github.com/OpenVisionE2/meta-odin.git
+[submodule "meta-protek"]
+	path = meta-protek
+	url = https://github.com/OpenVisionE2/meta-protek.git
+[submodule "meta-rpi"]
+	path = meta-rpi
+	url = https://github.com/OpenVisionE2/meta-rpi.git
+[submodule "meta-sh4"]
+	path = meta-sh4
+	url = https://github.com/OpenVisionE2/meta-sh4.git
+[submodule "meta-tiviar"]
+	path = meta-tiviar
+	url = https://github.com/OpenVisionE2/meta-tiviar.git
+[submodule "meta-tripledot"]
+	path = meta-tripledot
+	url = https://github.com/OpenVisionE2/meta-tripledot.git
+[submodule "meta-uclan"]
+	path = meta-uclan
+	url = https://github.com/OpenVisionE2/meta-uclan.git
+[submodule "meta-ultramini"]
+	path = meta-ultramini
+	url = https://github.com/OpenVisionE2/meta-ultramini.git
+[submodule "meta-vuplus"]
+	path = meta-vuplus
+	url = https://github.com/OpenVisionE2/meta-vuplus.git
+[submodule "meta-xcore"]
+	path = meta-xcore
+	url = https://github.com/OpenVisionE2/meta-xcore.git
+[submodule "meta-xp"]
+	path = meta-xp
+	url = https://github.com/OpenVisionE2/meta-xp.git
+[submodule "meta-xtrend"]
+	path = meta-xtrend
+	url = https://github.com/OpenVisionE2/meta-xtrend.git
+[submodule "meta-zgemma"]
+	path = meta-zgemma
+	url = https://github.com/OpenVisionE2/meta-zgemma.git

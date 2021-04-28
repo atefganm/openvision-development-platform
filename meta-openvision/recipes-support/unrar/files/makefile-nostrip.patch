@@ -1,0 +1,19 @@
+diff -Naur unrar/makefile unrar-prince/makefile
+--- unrar/makefile	2017-11-22 10:23:39.000000000 +0330
++++ unrar-prince/makefile	2019-09-08 00:19:13.208243844 +0430
+@@ -2,12 +2,12 @@
+ # Makefile for UNIX - unrar
+ 
+ # Linux using GCC
+-CXX=c++
++#CXX=c++
+ CXXFLAGS=-O2 -Wno-logical-op-parentheses -Wno-switch -Wno-dangling-else
+ LIBFLAGS=-fPIC
+ DEFINES=-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -DRAR_SMP
+-STRIP=strip
+-AR=ar
++#STRIP=strip
++#AR=ar
+ LDFLAGS=-pthread
+ DESTDIR=/usr
+ 

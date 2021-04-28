@@ -1,0 +1,376 @@
+diff -Naur linux-sh4-2.6.32.71-stmicro-4g/arch/sh/include/asm/irq-ilc.h linux-sh4-2.6.32.71-stmicro-4g-PersianPrince/arch/sh/include/asm/irq-ilc.h
+--- linux-sh4-2.6.32.71-stmicro-4g/arch/sh/include/asm/irq-ilc.h	2020-08-30 13:30:04.000000000 +0430
++++ linux-sh4-2.6.32.71-stmicro-4g-PersianPrince/arch/sh/include/asm/irq-ilc.h	2020-08-30 17:17:13.464259043 +0430
+@@ -44,7 +44,7 @@
+ #define ILC_IRQ(x)	(ILC_FIRST_IRQ + (x))
+ #elif	defined(CONFIG_CPU_SUBTYPE_STX7111)
+ #define ILC_FIRST_IRQ	176
+-#define ILC_NR_IRQS	(64+36)
++#define ILC_NR_IRQS	(64+35)
+ #define ILC_INT_IRQ(x)	(ILC_FIRST_IRQ + (x))
+ #define ILC_EXT_IRQ(x)	(ILC_FIRST_IRQ + 64 + (x))
+ #define ILC_IRQ(x)	ILC_INT_IRQ(x)
+diff -Naur linux-sh4-2.6.32.71-stmicro-4g/arch/sh/kernel/cpu/sh4/setup-stxh205.c linux-sh4-2.6.32.71-stmicro-4g-PersianPrince/arch/sh/kernel/cpu/sh4/setup-stxh205.c
+--- linux-sh4-2.6.32.71-stmicro-4g/arch/sh/kernel/cpu/sh4/setup-stxh205.c	2020-08-30 13:30:04.000000000 +0430
++++ linux-sh4-2.6.32.71-stmicro-4g-PersianPrince/arch/sh/kernel/cpu/sh4/setup-stxh205.c	2020-08-30 17:17:13.464259043 +0430
+@@ -11,17 +11,15 @@
+ #include <linux/init.h>
+ #include <linux/platform_device.h>
+ #include <linux/io.h>
+-#include <linux/reboot.h>
+-#include <linux/pm.h>
++//#include <linux/pm.h>
+ #include <linux/stm/platform.h>
+ #include <linux/stm/stxh205.h>
+ #include <linux/stm/sysconf.h>
+-#ifdef CONFIG_STM_LPM
+-#include <linux/stm/lpm.h>
+-#include <linux/stm/wakeup_devices.h>
+-#endif
++//#ifdef CONFIG_STM_LPM
++//#include <linux/stm/lpm.h>
++//#include <linux/stm/wakeup_devices.h>
++//#endif
+ #include <asm/irq-ilc.h>
+-#include <asm/restart.h>
+ 
+ /* SH4-only resources ----------------------------------------------------- */
+ 
+@@ -65,60 +63,14 @@
+ }
+ core_initcall(stxh205_sh4_devices_setup);
+ 
+-/* Warm reboot --------------------------------------------------------- */
+-
+-#ifdef CONFIG_STM_LPM
+-static void stxh205_lpm_poweroff(void)
+-{
+-	struct stm_wakeup_devices wkd;
+-
+-	stm_check_wakeup_devices(&wkd);
+-
+-	stm_lpm_config_reboot(stm_lpm_reboot_with_ddr_off);
+-
+-	stm_lpm_power_off();
+-
+-	machine_halt();
+-}
+-
+-void stxh205_prepare_restart(void)
+-{
+-	stm_lpm_config_reboot(stm_lpm_reboot_with_ddr_off);
+-
+-	stm_lpm_reset(STM_LPM_SOC_RESET);
+-
+-	machine_halt();
+-}
+-
+-static int __init stxh205_machine_init(void)
+-{
+-	register_prepare_restart_handler(stxh205_prepare_restart);
+-
+-	pm_power_off = stxh205_lpm_poweroff;
+-
+-	return 0;
+-}
+-arch_initcall(stxh205_machine_init);
+-#else
+-void stxh205_prepare_restart(void)
++void machine_restart(char * __unused)
+ {
+ 	struct sysconf_field *sc;
+-
+-	sc = sysconf_claim(SYSCONF(498), 0, 0, "reset");
+-	sysconf_write(sc, 0);
+-
+-	sc = sysconf_claim(SYSCONF(475), 2, 2, "reset");
+-	sysconf_write(sc, 0);
+-}
+-
+-static int __init stxh205_reset_init(void)
+-{
+-	register_prepare_restart_handler(stxh205_prepare_restart);
+-
+-	return 0;
++         sc = sysconf_claim(SYSCONF(498), 0, 0, "st40_mask");
++         sysconf_write(sc, 0);
++         sc = sysconf_claim(SYSCONF(475), 2, 2, "st40_reset");
++         sysconf_write(sc, 0);
+ }
+-arch_initcall(stxh205_reset_init);
+-#endif
+ 
+ /* Interrupt initialisation ----------------------------------------------- */
+ 
+diff -Naur linux-sh4-2.6.32.71-stmicro-4g/arch/sh/kernel/setup.c linux-sh4-2.6.32.71-stmicro-4g-PersianPrince/arch/sh/kernel/setup.c
+--- linux-sh4-2.6.32.71-stmicro-4g/arch/sh/kernel/setup.c	2020-08-30 13:30:04.000000000 +0430
++++ linux-sh4-2.6.32.71-stmicro-4g-PersianPrince/arch/sh/kernel/setup.c	2020-08-30 17:17:13.464259043 +0430
+@@ -420,6 +420,44 @@
+ #endif
+ #endif
+ 
++	{
++		int command_line_len = strlen(command_line);
++		char flash_org_command_line[] = "console=ttyAS0,115200 root=/dev/mtdblock2 ubi.mtd=2";
++		char flash_new_command_line[] = "console=ttyAS0,115200 root=/dev/mtdblock2 ubi.mtd=2 root=ubi0:rootfs rootfstype=ubifs rw init=/bin/devinit printk=1 console_loglevel=7 stmmaceth=ethaddr:";
++		int flash_org_command_line_len = strlen(flash_org_command_line);
++		char usb_org_command_line[] = "console=ttyAS0,115200 root=/dev/root rw";
++		char usb_new_command_line[] = "console=ttyAS0,115200 root=/dev/sda2/root.img rootfstype=jffs2 rw nwhwconf=$nwhwnet init=/bin/devinit printk=1 console_loglevel=7 rootdelay=5 stmmaceth=ethaddr:";
++		int usb_org_command_line_len = strlen(usb_org_command_line);
++		char mac[] = "00:00:00:00:00:00";
++		int i;
++
++		for(i = 0; i < (command_line_len - 7); i++)
++		{
++			if (!strncmp(command_line + i, "ethaddr", 7))
++			{
++				strlcpy(mac, command_line + i + 8, sizeof(mac));
++				break;
++			}
++			if (!strncmp(command_line + i, "hwaddr", 6))
++			{
++				strlcpy(mac, command_line + i + 7, sizeof(mac));
++				break;
++			}
++		}
++		/* boot from flash */
++		if (command_line_len >= flash_org_command_line_len && !strncmp(command_line, flash_org_command_line, flash_org_command_line_len))
++		{
++			strlcpy(command_line, flash_new_command_line, sizeof(command_line));
++			strlcat(command_line, mac, sizeof(command_line));
++		}
++		/* boot from USB */
++		if (command_line_len >= usb_org_command_line_len && !strncmp(command_line, usb_org_command_line, usb_org_command_line_len))
++		{
++			strlcpy(command_line, usb_new_command_line, sizeof(command_line));
++//			strlcat(command_line, mac, sizeof(command_line));
++		}
++	}
++
+ 	/* Save unparsed command line copy for /proc/cmdline */
+ 	memcpy(boot_command_line, command_line, COMMAND_LINE_SIZE);
+ 	*cmdline_p = command_line;
+diff -Naur linux-sh4-2.6.32.71-stmicro-4g/drivers/net/phy/phy_device.c linux-sh4-2.6.32.71-stmicro-4g-PersianPrince/drivers/net/phy/phy_device.c
+--- linux-sh4-2.6.32.71-stmicro-4g/drivers/net/phy/phy_device.c	2020-08-30 13:30:04.000000000 +0430
++++ linux-sh4-2.6.32.71-stmicro-4g-PersianPrince/drivers/net/phy/phy_device.c	2020-08-30 17:17:13.464259043 +0430
+@@ -1104,7 +1104,7 @@
+ 		return retval;
+ 	}
+ 
+-	pr_debug("%s: Registered new driver\n", new_driver->name);
++	pr_info("%s: Registered new driver (0x%08x)\n", new_driver->name, new_driver->phy_id);
+ 
+ 	return 0;
+ }
+diff -Naur linux-sh4-2.6.32.71-stmicro-4g/drivers/net/stmmac/stmmac_mdio.c linux-sh4-2.6.32.71-stmicro-4g-PersianPrince/drivers/net/stmmac/stmmac_mdio.c
+--- linux-sh4-2.6.32.71-stmicro-4g/drivers/net/stmmac/stmmac_mdio.c	2020-08-30 13:30:04.000000000 +0430
++++ linux-sh4-2.6.32.71-stmicro-4g-PersianPrince/drivers/net/stmmac/stmmac_mdio.c	2020-08-30 17:17:13.464259043 +0430
+@@ -170,6 +170,7 @@
+ 	priv->mii = new_bus;
+ 
+ 	found = 0;
++
+ 	for (addr = 0; addr < PHY_MAX_ADDR; addr++) {
+ 		struct phy_device *phydev = new_bus->phy_map[addr];
+ 		if (phydev) {
+@@ -194,12 +195,26 @@
+ 			 * and no PHY number was provided to the MAC,
+ 			 * use the one probed here.
+ 			 */
+-			if ((priv->plat->bus_id == mdio_bus_data->bus_id) &&
+-			    (priv->plat->phy_addr == -1))
++
++			act = 0;
++
++			if ((priv->plat->bus_id == mdio_bus_data->bus_id) && (/*(priv->plat->phy_addr == -1) ||*/
++					(phydev->phy_id == 0x0181b880) || // Davicom DM9161E
++					(phydev->phy_id == 0x0181b8a0) || // Davicom DM9161A
++					(phydev->phy_id == 0x00181b80) || // Davicom DM9131
++					(phydev->phy_id == 0x1c040011) || // STe100p
++					(phydev->phy_id == 0x00061c50) || // STe101p
++					(phydev->phy_id == 0x00008201) || (phydev->phy_id == 0x0007c0f1) ||
++					(phydev->phy_id == 0x001cc912) || // RTL821x
++					(phydev->phy_id == 0x001cc816) || // RTL8201
++					(phydev->phy_id == 0x02430d90) || // IC+ IP1001
++					(phydev->phy_id == 0x02430c54) || // IC+ IP101A/G
++					(phydev->phy_id == 0x02430d80)))  // IC+ IP175C
++			{
+ 				priv->plat->phy_addr = addr;
++ 				act = 1;
++ 			}
+ 
+-			act = (priv->plat->bus_id == mdio_bus_data->bus_id) &&
+-				(priv->plat->phy_addr == addr);
+ 			switch (phydev->irq) {
+ 			case PHY_POLL:
+ 				irq_str = "POLL";
+diff -Naur linux-sh4-2.6.32.71-stmicro-4g/drivers/stm/gpio.c linux-sh4-2.6.32.71-stmicro-4g-PersianPrince/drivers/stm/gpio.c
+--- linux-sh4-2.6.32.71-stmicro-4g/drivers/stm/gpio.c	2020-08-30 13:30:04.000000000 +0430
++++ linux-sh4-2.6.32.71-stmicro-4g-PersianPrince/drivers/stm/gpio.c	2020-08-30 17:17:13.464259043 +0430
+@@ -28,13 +28,19 @@
+ #include <linux/stm/pad.h>
+ #include <linux/stm/pio.h>
+ #include <linux/stm/pm_sys.h>
++#ifdef CONFIG_PROC_FS
++#include <linux/proc_fs.h>
++#include <linux/kallsyms.h>
++#endif
+ #include "reg_pio.h"
+ 
+-
++#if !defined(CONFIG_STPIO)
+ #define CONFIG_STPIO
++#endif
+ 
+ struct stpio_pin {
+ #ifdef CONFIG_STPIO
++	const char *pin_name;
+ 	void (*func)(struct stpio_pin *pin, void *dev);
+ 	void* dev;
+ 	unsigned short port_no, pin_no;
+@@ -53,6 +59,7 @@
+ #ifdef CONFIG_HIBERNATION
+ 	unsigned char pm_saved_data;
+ #endif
++	unsigned char direction;
+ 	struct stpio_pin stpio;
+ };
+ 
+@@ -393,6 +400,9 @@
+ 
+ 	gpio_pm_set_direction(&port->pins[offset], direction);
+ 	set__PIO_PCx(port->base, offset, direction);
++
++	if (!port->pins[offset].stpio.pin_name)
++		port->pins[offset].stpio.pin_name = "-----";
+ }
+ 
+ 
+@@ -511,6 +521,10 @@
+ 
+ void stpio_free_pin(struct stpio_pin *pin)
+ {
++	stpio_configure_pin(pin, STPIO_IN);
++	pin->pin_name = NULL;
++	pin->func = 0;
++	pin->dev = 0;
+ 	stm_pad_release_gpio(stm_gpio(pin->port_no, pin->pin_no));
+ }
+ EXPORT_SYMBOL(stpio_free_pin);
+@@ -633,6 +647,102 @@
+ }
+ EXPORT_SYMBOL(stpio_set_irq_type);
+ 
++#ifdef CONFIG_PROC_FS
++static struct proc_dir_entry *proc_stpio;
++
++static inline const char *stpio_get_direction_name(unsigned int direction)
++{
++	switch (direction)
++	{
++		case STPIO_NONPIO:
++			return "IN  (pull-up)      ";
++		case STPIO_BIDIR:
++			return "BI  (open-drain)   ";
++		case STPIO_OUT:
++			return "OUT (push-pull)    ";
++		case STPIO_IN:
++			return "IN  (Hi-Z)         ";
++		case STPIO_ALT_OUT:
++			return "Alt-OUT (push-pull)";
++		case STPIO_ALT_BIDIR:
++			return "Alt-BI (open-drain)";
++		default:
++			return "forbidden          ";
++	}
++};
++
++static inline const char *stpio_get_handler_name(void *func)
++{
++	static char sym_name[KSYM_NAME_LEN];
++	char *modname;
++	unsigned long symbolsize, offset;
++	const char *symb;
++
++	if (func == NULL)
++	{
++		return "";
++	}
++	symb = kallsyms_lookup((unsigned long)func, &symbolsize, &offset,
++			&modname, sym_name);
++
++	return symb ? symb : "???";
++}
++
++static int stpio_read_proc(char *page, char **start, off_t off, int count,
++		int *eof, void *data_unused)
++{
++	int len;
++	int port_no, pin_no;
++	off_t begin = 0;
++	int num_ports = stm_gpio_num / STM_GPIO_PINS_PER_PORT;
++	struct stm_gpio_port *port;
++	struct stm_gpio_pin *pin;
++	char *name;
++
++	len = sprintf(page, "  port      name          direction\n");
++	for (port_no = 0; port_no < num_ports; port_no++)
++	{
++		for (pin_no = 0; pin_no < STM_GPIO_PINS_PER_PORT; pin_no++)
++		{
++			port = &stm_gpio_ports[port_no];
++			if (!port)
++			{
++				continue;
++			}
++			pin = &port->pins[pin_no];
++			if (!pin)
++			{
++				continue;
++			}
++			name = pin->stpio.pin_name ? pin->stpio.pin_name : "";
++			len += sprintf(page + len,
++					"PIO %d.%d [%-10s] [%s] [%s]\n",
++					port_no, pin_no, name,
++					stpio_get_direction_name(pin->direction),
++					stpio_get_handler_name(pin->stpio.func));
++ 			if (len + begin > off + count)
++			{
++				goto done;
++			}
++			if (len + begin < off)
++			{
++				begin += len;
++				len = 0;
++			}
++		}
++	}
++	*eof = 1;
++
++done:
++	if (off >= len + begin)
++	{
++		return 0;
++	}
++	*start = page + (off - begin);
++	return ((count < begin + len - off) ? count : begin + len - off);
++}
++#endif /* CONFIG_PROC_FS */
++
+ #endif /* CONFIG_STPIO */
+ 
+ 
+@@ -1040,6 +1150,13 @@
+ {
+ 	int ret;
+ 
++#ifdef CONFIG_PROC_FS
++	proc_stpio = create_proc_entry("stpio", 0, NULL);
++	if (proc_stpio)
++	{
++		proc_stpio->read_proc = stpio_read_proc;
++	}
++#endif
+ 	ret = platform_driver_register(&stm_gpio_driver);
+ 	if (ret)
+ 		return ret;

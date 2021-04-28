@@ -1,0 +1,214 @@
+Fix kernel oops during boot with OE/yocto built kernel.
+No Idea why this worked before, as apparently the device structure
+was corrupted in memory by invalid mixing of platform_device and device.
+Not tested: removing the module, probably buggy.
+
+Index: b/drivers/ata/sata_tangox.c
+===================================================================
+--- a/drivers/ata/sata_tangox.c
++++ b/drivers/ata/sata_tangox.c
+@@ -1230,7 +1230,8 @@ static int hsata_check_atapi_dma(struct
+ 		return 0;
+ }
+ 
+-static struct scsi_host_template hsata_sht = {
++static struct scsi_host_template hsata_sht[2] = {
++	{
+ 	.module			= THIS_MODULE,
+ 	.name			= DRV_NAME0,
+ 	.ioctl			= hsata_scsi_ioctl,
+@@ -1247,6 +1248,24 @@ static struct scsi_host_template hsata_s
+ 	.slave_configure	= hsata_scsi_slave_cfg,
+ 	.slave_destroy		= ata_scsi_slave_destroy,
+ 	.bios_param		= hsata_std_bios_param,
++	}, {
++	.module			= THIS_MODULE,
++	.name			= DRV_NAME1,
++	.ioctl			= hsata_scsi_ioctl,
++	.queuecommand		= hsata_scsi_queuecmd,
++	.can_queue		= ATA_DEF_QUEUE,
++	.this_id		= ATA_SHT_THIS_ID,
++	.sg_tablesize		= LIBATA_MAX_PRD,
++	.max_sectors		= 2 * ATA_MAX_SECTORS,
++	.cmd_per_lun		= ATA_SHT_CMD_PER_LUN,
++	.emulated		= ATA_SHT_EMULATED,
++	.use_clustering		= ATA_SHT_USE_CLUSTERING,
++	.proc_name		= DRV_NAME0,
++	.dma_boundary		= ATA_DMA_BOUNDARY,
++	.slave_configure	= hsata_scsi_slave_cfg,
++	.slave_destroy		= ata_scsi_slave_destroy,
++	.bios_param		= hsata_std_bios_param,
++	}
+ };
+ 
+ static struct ata_port_operations hsata_ops = {
+@@ -1292,7 +1311,7 @@ static struct ata_port_info hsata_port_i
+ 	.port_ops	= &hsata_ops,
+ };
+ 
+-int hsata_probe(struct device *adev, int controller)
++int hsata_probe(struct platform_device *pdev, int controller)
+ {
+ 	int status = 0;
+ 	int num_ports = 1;
+@@ -1301,6 +1320,14 @@ int hsata_probe(struct device *adev, int
+ 	struct hsata_device *hsdev;
+ 	const struct ata_port_info *ppi[1];
+ 	unsigned long flags;
++	struct device *adev;
++
++	if (pdev)
++		adev = &pdev->dev;
++	else {
++		printk("%s NULL pdev\n", __func__);
++		return -ENODEV;
++	}
+ 
+ 	ppi[0] = &hsata_port_info;
+ 
+@@ -1365,7 +1392,7 @@ int hsata_probe(struct device *adev, int
+ 	DPRINTK("start ata_host_activate, status=0x%x irq=0x%x\n", status, hsdev->sata_irq);
+ 
+ 	status = ata_host_activate(hsdev->host, hsdev->sata_irq, 
+-					hsata_isr, IRQF_DISABLED, &hsata_sht);
++					hsata_isr, IRQF_DISABLED, &hsata_sht[controller]);
+ 
+ 	DPRINTK("ata_host_activate done, status=0x%x\n", status);
+ 
+@@ -1385,22 +1412,31 @@ CLEANUP:
+ 	return status;
+ }
+ 
+-int hsata_probe0(struct device *adev)
++int hsata_probe0(struct platform_device *adev)
+ {
+ 	return hsata_probe(adev, 0);
+ }
+ 
+-int hsata_probe1(struct device *adev)
++int hsata_probe1(struct platform_device *adev)
+ {
+ 	return hsata_probe(adev, 1);
+ }
+ 
+-static int hsata_remove(struct device *adev, int controller)
++static int hsata_remove(struct platform_device *pdev, int controller)
+ {
+ 	struct hsata_device *hsdev;
+ 	struct ata_host *host;
+ 	struct ata_port *ap;
+ 
++	struct device *adev;
++
++	if (pdev)
++		adev = &pdev->dev;
++	else {
++		printk("%s NULL pdev\n", __func__);
++		return -ENODEV;
++	}
++
+ 	DPRINTK("driver=%s\n", 
+ 		(adev->driver)?
+ 		((adev->driver->name)?(adev->driver->name):"NO NAME") :
+@@ -1427,28 +1463,28 @@ static int hsata_remove(struct device *a
+ 	return 0;
+ }
+ 
+-static int hsata_remove0(struct device *adev)
++static int hsata_remove0(struct platform_device *adev)
+ {
+ 	hsata_remove(adev, 0);
+ 	return 0;
+ }
+ 
+-static int hsata_remove1(struct device *adev)
++static int hsata_remove1(struct platform_device *adev)
+ {
+ 	hsata_remove(adev, 1);
+ 	return 0;
+ }
+ 
+-static struct device_driver hsata_driver0 = {
+-	.name	= (char *)DRV_NAME0,
+-	.bus	= &platform_bus_type,
++static struct platform_driver hsata_driver0 = {
++	.driver.name	= DRV_NAME0,
++	.driver.bus	= &platform_bus_type,
+ 	.probe	= hsata_probe0,
+ 	.remove	= hsata_remove0,
+ };
+ 
+-static struct device_driver hsata_driver1 = {
+-	.name	= (char *)DRV_NAME1,
+-	.bus	= &platform_bus_type,
++static struct platform_driver hsata_driver1 = {
++	.driver.name	= DRV_NAME1,
++	.driver.bus	= &platform_bus_type,
+ 	.probe	= hsata_probe1,
+ 	.remove	= hsata_remove1,
+ };
+@@ -1459,7 +1495,7 @@ static void tangox_sata_release_dev(stru
+ }
+ 
+ static struct platform_device tangox_sata_device0 = {
+-	.name	= (char *)DRV_NAME0,
++	.name	= DRV_NAME0,
+ 	.id	= -1,
+ 	.dev	= {
+ 		.release	= tangox_sata_release_dev,
+@@ -1469,7 +1505,7 @@ static struct platform_device tangox_sat
+ };
+ 
+ static struct platform_device tangox_sata_device1 = {
+-	.name	= (char *)DRV_NAME1,
++	.name	= DRV_NAME1,
+ 	.id	= -1,
+ 	.dev	= {
+ 		.release	= tangox_sata_release_dev,
+@@ -1478,11 +1514,11 @@ static struct platform_device tangox_sat
+ 	.resource	= 0,
+ };
+ 
+-static struct platform_device *tangox_platform_devices0[] __initdata = {
++static struct platform_device *tangox_platform_devices0[] = {
+ 	&tangox_sata_device0,
+ };
+ 
+-static struct platform_device *tangox_platform_devices1[] __initdata = {
++static struct platform_device *tangox_platform_devices1[] = {
+ 	&tangox_sata_device1,
+ };
+ 
+@@ -1505,7 +1541,7 @@ static int __init tangox_hsata_module_in
+ 			return status;
+ 		}
+ 		/* Driver 0 registration*/
+-	 	status = driver_register(&hsata_driver0);
++	 	status = platform_driver_register(&hsata_driver0);
+ 		if (status) {
+ 			printk("Failed to register driver 0.\n");
+ 			return status;
+@@ -1521,7 +1557,7 @@ static int __init tangox_hsata_module_in
+ 			return status;
+ 		}
+ 		/* Driver 1 registration*/
+-		status = driver_register(&hsata_driver1);
++		status = platform_driver_register(&hsata_driver1);
+ 		if (status) {
+ 			printk("Failed to register driver 1.\n");
+ 			return status;
+@@ -1534,12 +1570,12 @@ static int __init tangox_hsata_module_in
+ static void __exit tangox_hsata_module_cleanup(void)
+ {
+ 	if ((disable_ports & 1) == 0) {
+-		driver_unregister(&hsata_driver0); 
++		platform_driver_unregister(&hsata_driver0);
+ 		platform_device_unregister(&tangox_sata_device0);
+ 	}
+ 
+ 	if ((disable_ports & 2) == 0) {
+-		driver_unregister(&hsata_driver1); 
++		platform_driver_unregister(&hsata_driver1);
+ 		platform_device_unregister(&tangox_sata_device1);
+ 	}
+ }
